@@ -1,18 +1,19 @@
-import 'dotenv/config'; // Asegura que las variables de entorno se carguen
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
 
-  // Forzar la carga de variables de entorno
-  const configService = app.get(ConfigModule);
-
-  // Configuración de CORS
-  app.enableCors();
+  // Configuración de CORS específica
+  app.enableCors({
+    origin: configService.get('CORS_ORIGIN') || 'http://192.168.40.79:5001',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+    credentials: true,
+  });
 
   // Configuración de validación global
   app.useGlobalPipes(new ValidationPipe({
@@ -25,14 +26,17 @@ async function bootstrap() {
     .setTitle('TK Soporte API')
     .setDescription('API para sistema de gestión de tickets de soporte')
     .setVersion('1.0')
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
+  // Usar ConfigService para obtener el puerto
+  const port = configService.get('PORT') || 5000;
+  
+  await app.listen(port, '0.0.0.0', () => {
+    console.log(`Application is running on: http://0.0.0.0:${port}`);
+    console.log(`Swagger documentation available at: http://0.0.0.0:${port}/api`);
+  });
 }
 bootstrap();
-
-
