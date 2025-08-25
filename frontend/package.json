@@ -1,0 +1,48 @@
+{
+  "name": "tk-soporte-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "proxy": "http://localhost:3000",
+  "dependencies": {
+    "@headlessui/react": "^1.7.17",
+    "@heroicons/react": "^2.0.18",
+    "@nivo/treemap": "^0.99.0",
+    "@tailwindcss/forms": "^0.5.3",
+    "@tanstack/react-query": "^5.17.17",
+    "@tanstack/react-table": "^8.0.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "axios": "^1.6.7",
+    "chart.js": "^4.5.0",
+    "date-fns": "^4.1.0",
+    "react": "^18.2.0",
+    "react-chartjs-2": "^5.3.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.62.0",
+    "react-router-dom": "^7.8.1",
+    "react-scripts": "^5.0.1",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss": "^3.3.0",
+    "typescript": "^5.9.2"
+  },
+  "scripts": {
+    "start": "cross-env PORT=3001 react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "cross-env": "^10.0.0"
+  }
+}
