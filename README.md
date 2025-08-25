@@ -10,14 +10,14 @@ Sistema de gestión de tickets de soporte técnico.
 
 ## Configuración para EasyPanel
 
-1. En EasyPanel, crear un nuevo proyecto
-2. Seleccionar "Custom Project"
-3. Configurar el proyecto:
-   - Name: tksoporte
-   - Repository URL: https://github.com/peuscategui/TK-Soporte.git
+1. En EasyPanel, seleccionar "Github" como método de despliegue
+2. Configurar el proyecto:
+   - Owner: peuscategui
+   - Repository: TK-Soporte
    - Branch: master
-   - Build Command: docker-compose up -d --build
-   - Port: 80
+   - Build Path: /
+
+NOTA: Asegúrate de tener configurado el token de GitHub en Settings si el repositorio es privado.
 
 ## Variables de Entorno
 
