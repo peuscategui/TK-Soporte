@@ -4,92 +4,60 @@ Sistema de gestión de tickets de soporte técnico.
 
 ## Requisitos
 
-- Docker y Docker Compose
-- Node.js 18+ (para desarrollo)
-- PostgreSQL (incluido en Docker)
+- Docker
+- Docker Compose
+- EasyPanel instalado en el servidor Ubuntu
 
-## Instalación con Docker
+## Configuración para EasyPanel
 
-1. Clonar el repositorio:
-```bash
-git clone <tu-repositorio>
-cd tksoporte
-```
+1. En EasyPanel, crear un nuevo proyecto
+2. Seleccionar "Custom Project"
+3. Configurar el proyecto:
+   - Name: tksoporte
+   - Repository URL: https://github.com/peuscategui/TK-Soporte.git
+   - Branch: master
+   - Build Command: docker-compose up -d --build
+   - Port: 80
 
-2. Construir y levantar los contenedores:
-```bash
-docker-compose up -d
-```
-
-La aplicación estará disponible en:
-- Frontend: http://localhost
-- Backend: http://localhost/api
-
-## Desarrollo local
+## Variables de Entorno
 
 ### Backend
+- NODE_ENV=production
+- DATABASE_HOST=192.168.40.129
+- DATABASE_PORT=5432
+- DATABASE_USER=postgres
+- DATABASE_PASSWORD=postgres
+- DATABASE_NAME=postgres
 
-1. Instalar dependencias:
+## Despliegue Manual
+
 ```bash
-cd backend
-npm install
+# Clonar el repositorio
+git clone https://github.com/peuscategui/TK-Soporte.git
+cd TK-Soporte
+
+# Construir y levantar los contenedores
+docker-compose up -d --build
 ```
 
-2. Configurar variables de entorno:
+## Acceso
+
+- Frontend: http://tu-dominio
+- Backend API: http://tu-dominio/api
+
+## Mantenimiento
+
+Para ver los logs:
 ```bash
-cp .env.example .env
-# Editar .env con tus configuraciones
+docker-compose logs -f
 ```
 
-3. Iniciar en modo desarrollo:
+Para reiniciar los servicios:
 ```bash
-npm run start:dev
+docker-compose restart
 ```
 
-### Frontend
-
-1. Instalar dependencias:
+Para detener los servicios:
 ```bash
-cd frontend
-npm install
-```
-
-2. Iniciar en modo desarrollo:
-```bash
-npm start
-```
-
-## Estructura del proyecto
-
-```
-.
-├── backend/             # API NestJS
-├── frontend/           # Aplicación React
-├── docker-compose.yml  # Configuración Docker
-└── README.md
-```
-
-## Características
-
-- Dashboard con estadísticas y gráficos
-- Gestión de tickets
-- Sistema de autenticación
-- Interfaz responsive
-- Gráficos interactivos
-
-## Despliegue en producción
-
-1. Configurar variables de entorno:
-```bash
-# Backend
-DB_HOST=db
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=tu_contraseña_segura
-DB_DATABASE=tksoporte
-```
-
-2. Construir y desplegar:
-```bash
-docker-compose -f docker-compose.prod.yml up -d
+docker-compose down
 ```
