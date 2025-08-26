@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/axios';
 import { User, UserRole } from '../types/user';
-import { jwtDecode } from 'jwt-decode'; // Necesitaremos instalar jwt-decode
+import jwtDecode from 'jwt-decode'; // Importación corregida
 
 interface LoginCredentials {
   email: string;
