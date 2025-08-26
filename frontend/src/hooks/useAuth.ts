@@ -52,7 +52,11 @@ export const useAuth = () => {
 
   const login = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      console.log('Intentando login con URL:', config.apiUrl + config.endpoints.auth.login);
+      // Log de la URL completa antes de hacer la petición
+      const fullUrl = `${config.apiUrl}/${config.endpoints.auth.login}`.replace(/([^:]\/)\/+/g, "$1");
+      console.log('Intentando login con URL:', fullUrl);
+      console.log('Credenciales:', credentials);
+
       const { data } = await api.post<AuthResponse>(config.endpoints.auth.login, credentials);
       return data;
     },
@@ -61,6 +65,13 @@ export const useAuth = () => {
       api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
+    onError: (error: any) => {
+      console.error('Error en login:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
+    }
   });
 
   const logout = () => {
