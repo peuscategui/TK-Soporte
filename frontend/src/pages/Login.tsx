@@ -11,6 +11,9 @@ interface LoginForm {
   password: string;
 }
 
+// Obtener la URL base del backend desde las variables de entorno inyectadas
+const API_URL = (window as any).ENV?.REACT_APP_API_URL || 'http://192.168.40.79:5000';
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -22,8 +25,13 @@ const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      // Usar directamente la URL del backend
-      const response = await axios.post('http://192.168.40.79:5000/auth/login', data, {
+      // Log de la URL que se está usando
+      console.log('Using API URL:', API_URL);
+      console.log('Full login URL:', `${API_URL}/auth/login`);
+      console.log('Login data:', data);
+
+      // Hacer la petición al backend
+      const response = await axios.post(`${API_URL}/auth/login`, data, {
         headers: {
           'Content-Type': 'application/json',
         }
@@ -37,13 +45,29 @@ const Login: React.FC = () => {
         navigate('/dashboard');
       }
     } catch (error: any) {
-      console.error('Login error:', error.response || error);
+      // Log detallado del error
+      console.error('Login error:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+        config: error.config
+      });
+
       setError('root', {
         type: 'manual',
         message: error.response?.data?.message || 'Error al iniciar sesión',
       });
     }
   };
+
+  // Log al montar el componente
+  React.useEffect(() => {
+    console.log('Environment:', {
+      apiUrl: API_URL,
+      nodeEnv: (window as any).ENV?.NODE_ENV,
+      windowEnv: (window as any).ENV
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
