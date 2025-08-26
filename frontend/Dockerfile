@@ -5,8 +5,9 @@ WORKDIR /app
 # Copiamos los archivos de package.json primero
 COPY package*.json ./
 
-# Instalamos dependencias
+# Instalamos dependencias y jwt-decode explícitamente
 RUN npm install --legacy-peer-deps
+RUN npm install jwt-decode
 
 # Variables de entorno para el build
 ENV REACT_APP_API_URL=http://192.168.40.79:5000
@@ -18,7 +19,8 @@ COPY . .
 # Verificamos el contenido
 RUN echo "Contents before build:" && ls -la
 
-# Construimos la aplicación
+# Instalamos cualquier dependencia faltante y construimos
+RUN npm install --legacy-peer-deps
 RUN npm run build
 
 # Verificamos el contenido del build
