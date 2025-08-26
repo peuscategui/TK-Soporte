@@ -1,7 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../lib/axios';
-import { User, UserRole } from '../types/user';
-import jwtDecode from 'jwt-decode'; // Importación corregida
+import { User } from '../types/user';
+import jwtDecode from 'jwt-decode';
+import { config } from '../config';
 
 interface LoginCredentials {
   email: string;
@@ -51,7 +52,8 @@ export const useAuth = () => {
 
   const login = useMutation({
     mutationFn: async (credentials: LoginCredentials) => {
-      const { data } = await api.post<AuthResponse>('/auth/login', credentials);
+      console.log('Intentando login con URL:', config.apiUrl + config.endpoints.auth.login);
+      const { data } = await api.post<AuthResponse>(config.endpoints.auth.login, credentials);
       return data;
     },
     onSuccess: (data) => {

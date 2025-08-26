@@ -1,16 +1,9 @@
 import axios from 'axios';
-
-// Obtener la URL base de la API desde las variables de entorno
-const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.40.79:5000';
-
-// Log para debug
-console.log('API URL:', API_URL);
-console.log('Environment:', process.env.NODE_ENV);
-console.log('All env vars:', process.env);
+import { config } from '../config';
 
 // Crear instancia de axios con la configuración base
 export const api = axios.create({
-  baseURL: API_URL,
+  baseURL: config.apiUrl,
   headers: {
     'Content-Type': 'application/json',
   }
@@ -18,18 +11,32 @@ export const api = axios.create({
 
 // Interceptor para logs de peticiones
 api.interceptors.request.use(request => {
-  console.log('Starting Request:', request.url);
+  console.log('Starting Request:', {
+    url: request.url,
+    baseURL: request.baseURL,
+    method: request.method,
+    headers: request.headers,
+  });
   return request;
 });
 
 // Interceptor para logs de respuestas
 api.interceptors.response.use(
   response => {
-    console.log('Response:', response.status, response.data);
+    console.log('Response:', {
+      status: response.status,
+      url: response.config.url,
+      data: response.data,
+    });
     return response;
   },
   error => {
-    console.error('API Error:', error.response?.status, error.response?.data);
+    console.error('API Error:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      data: error.response?.data,
+      message: error.message,
+    });
     return Promise.reject(error);
   }
 );
