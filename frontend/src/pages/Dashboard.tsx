@@ -133,7 +133,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const chartOptions: ChartOptions<'line'> = {
+  const baseOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -144,16 +144,6 @@ const Dashboard: React.FC = () => {
             size: 12
           }
         }
-      },
-      title: {
-        display: true,
-        text: 'Tendencia de Tickets',
-        font: {
-          family: "'Inter', sans-serif",
-          size: 16,
-          weight: '500'
-        },
-        padding: 20
       },
       tooltip: {
         backgroundColor: '#ffffff',
@@ -168,7 +158,6 @@ const Dashboard: React.FC = () => {
       y: {
         beginAtZero: true,
         ticks: {
-          stepSize: 1,
           font: {
             family: "'Inter', sans-serif",
             size: 12
@@ -192,61 +181,36 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const barChartOptions: ChartOptions<'bar'> = {
-    responsive: true,
+  const chartOptions: ChartOptions<'line'> = {
+    ...baseOptions,
     plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12
-          }
-        }
-      },
+      ...baseOptions.plugins,
+      title: {
+        display: true,
+        text: 'Tendencia de Tickets',
+        font: {
+          family: "'Inter', sans-serif",
+          size: 16,
+          weight: 'bold'
+        },
+        padding: 20
+      }
+    }
+  };
+
+  const barChartOptions: ChartOptions<'bar'> = {
+    ...baseOptions,
+    plugins: {
+      ...baseOptions.plugins,
       title: {
         display: true,
         text: 'Rendimiento por Agente',
         font: {
           family: "'Inter', sans-serif",
           size: 16,
-          weight: '500'
+          weight: 'bold'
         },
         padding: 20
-      },
-      tooltip: {
-        backgroundColor: '#ffffff',
-        titleColor: '#111827',
-        bodyColor: '#374151',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        padding: 12
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        ticks: {
-          stepSize: 5,
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12
-          }
-        },
-        grid: {
-          color: '#e5e7eb'
-        }
-      },
-      x: {
-        ticks: {
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12
-          }
-        },
-        grid: {
-          display: false
-        }
       }
     }
   };
