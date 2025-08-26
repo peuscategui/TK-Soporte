@@ -5,13 +5,18 @@ WORKDIR /app
 # Copiamos los archivos de package.json primero
 COPY package*.json ./
 
-# Instalamos dependencias y jwt-decode explícitamente
+# Limpiamos la caché de npm y el directorio node_modules si existe
+RUN rm -rf node_modules
+RUN npm cache clean --force
+
+# Instalamos todas las dependencias con --legacy-peer-deps
 RUN npm install --legacy-peer-deps
-RUN npm install jwt-decode
+RUN npm install jwt-decode@3.1.2 --legacy-peer-deps
 
 # Variables de entorno para el build
 ENV REACT_APP_API_URL=http://192.168.40.79:5000
 ENV PORT=5001
+ENV NODE_ENV=production
 
 # Copiamos el resto del código
 COPY . .
@@ -19,8 +24,7 @@ COPY . .
 # Verificamos el contenido
 RUN echo "Contents before build:" && ls -la
 
-# Instalamos cualquier dependencia faltante y construimos
-RUN npm install --legacy-peer-deps
+# Construimos la aplicación
 RUN npm run build
 
 # Verificamos el contenido del build
