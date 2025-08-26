@@ -1,7 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import axios from 'axios';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
@@ -11,63 +9,49 @@ interface LoginForm {
   password: string;
 }
 
-// Obtener la URL base del backend desde las variables de entorno inyectadas
-const API_URL = (window as any).ENV?.REACT_APP_API_URL || 'http://192.168.40.79:5000';
-
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setError,
-  } = useForm<LoginForm>();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const onSubmit = async (data: LoginForm) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
     try {
-      // Log de la URL que se está usando
-      console.log('Using API URL:', API_URL);
-      console.log('Full login URL:', `${API_URL}/auth/login`);
-      console.log('Login data:', data);
-
-      // Hacer la petición al backend
-      const response = await axios.post(`${API_URL}/auth/login`, data, {
+      // URL hardcodeada del backend
+      const response = await fetch('http://192.168.40.79:5000/auth/login', {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
+        body: JSON.stringify({
+          email,
+          password,
+        }),
       });
 
       // Log de la respuesta
-      console.log('Login response:', response.data);
+      console.log('Response status:', response.status);
+      const data = await response.json();
+      console.log('Response data:', data);
 
-      if (response.data.access_token) {
-        localStorage.setItem('token', response.data.access_token);
+      if (response.ok && data.access_token) {
+        localStorage.setItem('token', data.access_token);
         navigate('/dashboard');
+      } else {
+        setError(data.message || 'Error al iniciar sesión');
       }
-    } catch (error: any) {
-      // Log detallado del error
-      console.error('Login error:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-        config: error.config
-      });
-
-      setError('root', {
-        type: 'manual',
-        message: error.response?.data?.message || 'Error al iniciar sesión',
-      });
+    } catch (err) {
+      console.error('Login error:', err);
+      setError('Error al conectar con el servidor');
+    } finally {
+      setIsLoading(false);
     }
   };
-
-  // Log al montar el componente
-  React.useEffect(() => {
-    console.log('Environment:', {
-      apiUrl: API_URL,
-      nodeEnv: (window as any).ENV?.NODE_ENV,
-      windowEnv: (window as any).ENV
-    });
-  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -82,40 +66,51 @@ const Login: React.FC = () => {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <Card>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <Input
-              label="Usuario"
-              type="text"
-              autoComplete="username"
-              error={errors.email?.message}
-              {...register('email', {
-                required: 'Este campo es requerido',
-              })}
-            />
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
+                Usuario
+              </label>
+              <div className="mt-1">
+                <input
+                  id="email"
+                  name="email"
+                  type="text"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
 
-            <Input
-              label="Contraseña"
-              type="password"
-              autoComplete="current-password"
-              error={errors.password?.message}
-              {...register('password', {
-                required: 'Este campo es requerido',
-                minLength: {
-                  value: 8,
-                  message: 'La contraseña debe tener al menos 8 caracteres',
-                },
-              })}
-            />
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                Contraseña
+              </label>
+              <div className="mt-1">
+                <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                />
+              </div>
+            </div>
 
-            {errors.root && (
-              <p className="text-sm text-red-600">{errors.root.message}</p>
+            {error && (
+              <p className="text-sm text-red-600">{error}</p>
             )}
 
             <Button
               type="submit"
               className="w-full"
+              disabled={isLoading}
             >
-              Iniciar sesión
+              {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
             </Button>
           </form>
         </Card>
