@@ -11,7 +11,8 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartOptions
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import { eachDayOfInterval, format, subWeeks } from 'date-fns';
@@ -132,17 +133,16 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
-        position: 'top' as const,
+        position: 'top',
         labels: {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          },
-          color: '#374151'
+          }
         }
       },
       title: {
@@ -153,26 +153,15 @@ const Dashboard: React.FC = () => {
           size: 16,
           weight: '500'
         },
-        color: '#111827',
         padding: 20
       },
       tooltip: {
         backgroundColor: '#ffffff',
         titleColor: '#111827',
-        titleFont: {
-          family: "'Inter', sans-serif",
-          size: 14,
-          weight: '500'
-        },
         bodyColor: '#374151',
-        bodyFont: {
-          family: "'Inter', sans-serif",
-          size: 12
-        },
         borderColor: '#e5e7eb',
         borderWidth: 1,
-        padding: 12,
-        boxPadding: 4
+        padding: 12
       }
     },
     scales: {
@@ -183,8 +172,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          },
-          color: '#374151'
+          }
         },
         grid: {
           color: '#e5e7eb'
@@ -195,8 +183,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          },
-          color: '#374151'
+          }
         },
         grid: {
           color: '#e5e7eb'
@@ -205,13 +192,35 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const barChartOptions = {
-    ...chartOptions,
+  const barChartOptions: ChartOptions<'bar'> = {
+    responsive: true,
     plugins: {
-      ...chartOptions.plugins,
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        }
+      },
       title: {
-        ...chartOptions.plugins.title,
-        text: 'Rendimiento por Agente'
+        display: true,
+        text: 'Rendimiento por Agente',
+        font: {
+          family: "'Inter', sans-serif",
+          size: 16,
+          weight: '500'
+        },
+        padding: 20
+      },
+      tooltip: {
+        backgroundColor: '#ffffff',
+        titleColor: '#111827',
+        bodyColor: '#374151',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12
       }
     },
     scales: {
@@ -222,8 +231,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          },
-          color: '#374151'
+          }
         },
         grid: {
           color: '#e5e7eb'
@@ -234,8 +242,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          },
-          color: '#374151'
+          }
         },
         grid: {
           display: false
@@ -244,11 +251,40 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Preparar datos para las áreas
-  const ticketsPorArea = tickets?.reduce((acc, ticket) => {
-    acc[ticket.area] = (acc[ticket.area] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  const horizontalBarOptions: ChartOptions<'bar'> = {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        backgroundColor: '#ffffff',
+        titleColor: '#111827',
+        bodyColor: '#374151',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12,
+        usePointStyle: true,
+        callbacks: {
+          label: (context) => `Total: ${context.raw}`
+        }
+      }
+    },
+    scales: {
+      y: {
+        grid: {
+          display: false
+        }
+      },
+      x: {
+        beginAtZero: true,
+        grid: {
+          color: '#e5e7eb'
+        }
+      }
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -264,41 +300,7 @@ const Dashboard: React.FC = () => {
           <div className="p-6">
             <div className="h-[300px]">
               <Bar
-                options={{
-                  indexAxis: 'y',
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      display: false
-                    },
-                    tooltip: {
-                      backgroundColor: '#ffffff',
-                      titleColor: '#111827',
-                      bodyColor: '#374151',
-                      borderColor: '#e5e7eb',
-                      borderWidth: 1,
-                      padding: 12,
-                      boxPadding: 4,
-                      usePointStyle: true,
-                      callbacks: {
-                        label: (context) => `Total: ${context.raw}`
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      grid: {
-                        display: false
-                      }
-                    },
-                    x: {
-                      beginAtZero: true,
-                      grid: {
-                        color: '#e5e7eb'
-                      }
-                    }
-                  }
-                }}
+                options={horizontalBarOptions}
                 data={{
                   labels: Object.entries(tickets?.reduce((acc, ticket) => {
                     acc[ticket.area] = (acc[ticket.area] || 0) + 1;
@@ -332,41 +334,7 @@ const Dashboard: React.FC = () => {
           <div className="p-6">
             <div className="h-[300px]">
               <Bar
-                options={{
-                  indexAxis: 'y',
-                  responsive: true,
-                  plugins: {
-                    legend: {
-                      display: false
-                    },
-                    tooltip: {
-                      backgroundColor: '#ffffff',
-                      titleColor: '#111827',
-                      bodyColor: '#374151',
-                      borderColor: '#e5e7eb',
-                      borderWidth: 1,
-                      padding: 12,
-                      boxPadding: 4,
-                      usePointStyle: true,
-                      callbacks: {
-                        label: (context) => `Total: ${context.raw}`
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      grid: {
-                        display: false
-                      }
-                    },
-                    x: {
-                      beginAtZero: true,
-                      grid: {
-                        color: '#e5e7eb'
-                      }
-                    }
-                  }
-                }}
+                options={horizontalBarOptions}
                 data={{
                   labels: Object.entries(tickets?.reduce((acc, ticket) => {
                     acc[ticket.category] = (acc[ticket.category] || 0) + 1;
