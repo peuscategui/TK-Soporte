@@ -12,7 +12,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions
+  ChartOptions,
+  ChartData
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
 import { eachDayOfInterval, format, subWeeks } from 'date-fns';
@@ -133,7 +134,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const baseOptions: ChartOptions<'line'> = {
+  const lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -144,6 +145,16 @@ const Dashboard: React.FC = () => {
             size: 12
           }
         }
+      },
+      title: {
+        display: true,
+        text: 'Tendencia de Tickets',
+        font: {
+          family: "'Inter', sans-serif",
+          size: 16,
+          weight: 'bold'
+        },
+        padding: 20
       },
       tooltip: {
         backgroundColor: '#ffffff',
@@ -181,27 +192,18 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const chartOptions: ChartOptions<'line'> = {
-    ...baseOptions,
+  const verticalBarOptions: ChartOptions<'bar'> = {
+    responsive: true,
     plugins: {
-      ...baseOptions.plugins,
-      title: {
-        display: true,
-        text: 'Tendencia de Tickets',
-        font: {
-          family: "'Inter', sans-serif",
-          size: 16,
-          weight: 'bold'
-        },
-        padding: 20
-      }
-    }
-  };
-
-  const barChartOptions: ChartOptions<'bar'> = {
-    ...baseOptions,
-    plugins: {
-      ...baseOptions.plugins,
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        }
+      },
       title: {
         display: true,
         text: 'Rendimiento por Agente',
@@ -211,6 +213,39 @@ const Dashboard: React.FC = () => {
           weight: 'bold'
         },
         padding: 20
+      },
+      tooltip: {
+        backgroundColor: '#ffffff',
+        titleColor: '#111827',
+        bodyColor: '#374151',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 12
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        },
+        grid: {
+          color: '#e5e7eb'
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        },
+        grid: {
+          display: false
+        }
       }
     }
   };
@@ -229,10 +264,7 @@ const Dashboard: React.FC = () => {
         borderColor: '#e5e7eb',
         borderWidth: 1,
         padding: 12,
-        usePointStyle: true,
-        callbacks: {
-          label: (context) => `Total: ${context.raw}`
-        }
+        usePointStyle: true
       }
     },
     scales: {
@@ -368,7 +400,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="h-[300px]">
-              <Line options={chartOptions} data={prepareChartData()} />
+              <Line options={lineChartOptions} data={prepareChartData()} />
             </div>
           </div>
         </div>
@@ -382,7 +414,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="h-[300px]">
-              <Bar options={barChartOptions} data={prepareAgentPerformanceData()} />
+              <Bar options={verticalBarOptions} data={prepareAgentPerformanceData()} />
             </div>
           </div>
         </div>
