@@ -1,6 +1,6 @@
 {
   "short_name": "TK Soporte",
-  "name": "Sistema de gestión de tickets de soporte",
+  "name": "Sistema de Gestión de Tickets de Soporte",
   "icons": [
     {
       "src": "favicon.ico",
@@ -13,7 +13,3 @@
   "theme_color": "#000000",
   "background_color": "#ffffff"
 }
-
-
-
-

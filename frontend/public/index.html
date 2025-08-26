@@ -9,15 +9,17 @@
       name="description"
       content="Sistema de gestión de tickets de soporte"
     />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
     <title>TK Soporte</title>
+    <!-- Variables de entorno - DEBE IR ANTES DE CUALQUIER OTRO SCRIPT -->
     <script>
       // Inyectar variables de entorno
       window.ENV = {
         REACT_APP_API_URL: 'http://192.168.40.79:5000',
         NODE_ENV: 'production'
       };
+      // Log para debug
+      console.log('Environment variables loaded:', window.ENV);
     </script>
   </head>
   <body>
