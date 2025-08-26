@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
-import { useAuthContext } from '../contexts/AuthContext';
+import axios from 'axios';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Card from '../components/ui/Card';
@@ -13,7 +13,6 @@ interface LoginForm {
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const { login } = useAuthContext();
   const {
     register,
     handleSubmit,
@@ -23,9 +22,22 @@ const Login: React.FC = () => {
 
   const onSubmit = async (data: LoginForm) => {
     try {
-      await login.mutateAsync(data);
-      navigate('/tickets');
+      // Usar directamente la URL del backend
+      const response = await axios.post('http://192.168.40.79:5000/auth/login', data, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+
+      // Log de la respuesta
+      console.log('Login response:', response.data);
+
+      if (response.data.access_token) {
+        localStorage.setItem('token', response.data.access_token);
+        navigate('/dashboard');
+      }
     } catch (error: any) {
+      console.error('Login error:', error.response || error);
       setError('root', {
         type: 'manual',
         message: error.response?.data?.message || 'Error al iniciar sesión',
@@ -78,7 +90,6 @@ const Login: React.FC = () => {
             <Button
               type="submit"
               className="w-full"
-              isLoading={login.isPending}
             >
               Iniciar sesión
             </Button>
@@ -90,5 +101,3 @@ const Login: React.FC = () => {
 };
 
 export default Login;
-
-
