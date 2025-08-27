@@ -12,18 +12,33 @@ const App: React.FC = () => {
     setIsLoading(true);
 
     try {
-      console.log('Intentando login...');
-      
-      const response = await fetch('http://192.168.40.79:5000/auth/login', {
+      // URL del backend sin /auth en la ruta
+      const response = await fetch('http://192.168.40.79:5000/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password,
+          // Agregamos información adicional para debug
+          timestamp: new Date().toISOString(),
+          clientInfo: {
+            userAgent: navigator.userAgent,
+            url: window.location.href
+          }
+        }),
       });
 
       console.log('Response status:', response.status);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error(errorData.message || 'Error en la autenticación');
+      }
+
       const data = await response.json();
       console.log('Response data:', data);
 
@@ -34,8 +49,8 @@ const App: React.FC = () => {
         setError('Credenciales inválidas');
       }
     } catch (err) {
-      console.error('Error:', err);
-      setError('Error de conexión');
+      console.error('Error completo:', err);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
