@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { API_CONFIG } from './config/api';
 
 const App: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -11,9 +12,11 @@ const App: React.FC = () => {
     setError('');
     setIsLoading(true);
 
+    const loginUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`;
+    console.log('Intentando login en:', loginUrl);
+
     try {
-      // URL del backend sin /auth en la ruta
-      const response = await fetch('http://192.168.40.79:5000/login', {
+      const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -22,21 +25,16 @@ const App: React.FC = () => {
         body: JSON.stringify({ 
           email, 
           password,
-          // Agregamos información adicional para debug
-          timestamp: new Date().toISOString(),
-          clientInfo: {
-            userAgent: navigator.userAgent,
-            url: window.location.href
-          }
+          timestamp: new Date().toISOString()
         }),
       });
 
       console.log('Response status:', response.status);
       
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
         console.error('Error response:', errorData);
-        throw new Error(errorData.message || 'Error en la autenticación');
+        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -158,6 +156,11 @@ const App: React.FC = () => {
           >
             {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
+
+          {/* Debug info */}
+          <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#666' }}>
+            API URL: {API_CONFIG.BASE_URL}
+          </div>
         </form>
       </div>
     </div>
