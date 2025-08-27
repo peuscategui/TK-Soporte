@@ -12,6 +12,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  ChartData,
   ChartOptions
 } from 'chart.js';
 import { Line, Bar } from 'react-chartjs-2';
@@ -73,7 +74,7 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const prepareChartData = () => {
+  const prepareLineChartData = (): ChartData<'line'> => {
     const dateRange = getDateRange();
     const days = eachDayOfInterval({ start: dateRange.start, end: dateRange.end });
     
@@ -103,7 +104,7 @@ const Dashboard: React.FC = () => {
     };
   };
 
-  const prepareAgentPerformanceData = () => {
+  const prepareBarChartData = (): ChartData<'bar'> => {
     const agentStats = tickets?.reduce((acc, ticket) => {
       if (ticket.agente) {
         acc[ticket.agente] = (acc[ticket.agente] || 0) + 1;
@@ -128,7 +129,7 @@ const Dashboard: React.FC = () => {
     };
   };
 
-  const chartOptions: ChartOptions<'line'> = {
+  const lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
     plugins: {
       legend: {
@@ -173,9 +174,17 @@ const Dashboard: React.FC = () => {
   };
 
   const barChartOptions: ChartOptions<'bar'> = {
-    ...chartOptions,
+    responsive: true,
     plugins: {
-      ...chartOptions.plugins,
+      legend: {
+        position: 'top',
+        labels: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        }
+      },
       title: {
         display: true,
         text: 'Rendimiento por Agente',
@@ -185,6 +194,25 @@ const Dashboard: React.FC = () => {
           weight: 'bold'
         },
         padding: 20
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        }
+      },
+      x: {
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          }
+        }
       }
     }
   };
@@ -234,7 +262,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="h-[300px]">
-              <Line options={chartOptions} data={prepareChartData()} />
+              <Line options={lineChartOptions} data={prepareLineChartData()} />
             </div>
           </div>
         </div>
@@ -247,7 +275,7 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="p-6">
             <div className="h-[300px]">
-              <Bar options={barChartOptions} data={prepareAgentPerformanceData()} />
+              <Bar options={barChartOptions} data={prepareBarChartData()} />
             </div>
           </div>
         </div>
