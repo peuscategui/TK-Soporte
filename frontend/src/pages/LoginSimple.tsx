@@ -1,40 +1,28 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { login } from '../services/auth';
 
 const LoginSimple: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
 
     try {
-      console.log('Intentando login...');
-      
-      const response = await fetch('http://192.168.40.79:5000/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      console.log('Response status:', response.status);
-      const data = await response.json();
-      console.log('Response data:', data);
-
-      if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
-        navigate('/dashboard');
-      } else {
-        setError('Credenciales inválidas');
-      }
+      const response = await login({ email, password });
+      localStorage.setItem('token', response.access_token);
+      navigate('/dashboard');
     } catch (err) {
-      console.error('Error:', err);
-      setError('Error de conexión');
+      console.error('Error de login:', err);
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -78,6 +66,7 @@ const LoginSimple: React.FC = () => {
               type="text"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -101,6 +90,7 @@ const LoginSimple: React.FC = () => {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading}
               style={{
                 width: '100%',
                 padding: '0.5rem',
@@ -123,6 +113,7 @@ const LoginSimple: React.FC = () => {
 
           <button
             type="submit"
+            disabled={isLoading}
             style={{
               width: '100%',
               backgroundColor: '#1d4ed8',
@@ -130,10 +121,12 @@ const LoginSimple: React.FC = () => {
               padding: '0.75rem',
               borderRadius: '0.375rem',
               fontSize: '0.875rem',
-              fontWeight: 'medium'
+              fontWeight: 'medium',
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              opacity: isLoading ? 0.7 : 1
             }}
           >
-            Iniciar sesión
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
           </button>
         </form>
       </div>
