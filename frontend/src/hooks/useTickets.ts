@@ -1,14 +1,22 @@
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
 import { Ticket } from '../types/ticket';
+import { API_CONFIG } from '../config/api';
 
-// Hook para obtener tickets
-export const useFilteredTickets = () => {
-  return useQuery({
-    queryKey: ['tickets'],
+export const useFilteredTickets = (filters: { page: number; limit: number }) => {
+  return useQuery<Ticket[]>({
+    queryKey: ['tickets', filters],
     queryFn: async () => {
-      const { data } = await axios.get<Ticket[]>('/api/tickets');
-      return data;
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TICKETS}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Error al obtener tickets');
+      }
+
+      return response.json();
     },
   });
 };

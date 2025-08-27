@@ -1,17 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { api } from '../lib/axios';
 import { User } from '../types/user';
 import jwtDecode from 'jwt-decode';
-import { config } from '../config';
-
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
-
-interface AuthResponse {
-  access_token: string;
-}
+import { API_CONFIG } from '../config/api';
 
 interface JwtPayload {
   username: string;
@@ -51,32 +41,29 @@ export const useAuth = () => {
   });
 
   const login = useMutation({
-    mutationFn: async (credentials: LoginCredentials) => {
-      // Log de la URL completa antes de hacer la petición
-      const fullUrl = `${config.apiUrl}/${config.endpoints.auth.login}`.replace(/([^:]\/)\/+/g, "$1");
-      console.log('Intentando login con URL:', fullUrl);
-      console.log('Credenciales:', credentials);
+    mutationFn: async (credentials: { email: string; password: string }) => {
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-      const { data } = await api.post<AuthResponse>(config.endpoints.auth.login, credentials);
-      return data;
+      if (!response.ok) {
+        throw new Error('Error en la autenticación');
+      }
+
+      return response.json();
     },
     onSuccess: (data) => {
       localStorage.setItem('token', data.access_token);
-      api.defaults.headers.common['Authorization'] = `Bearer ${data.access_token}`;
       queryClient.invalidateQueries({ queryKey: ['user'] });
     },
-    onError: (error: any) => {
-      console.error('Error en login:', {
-        message: error.message,
-        response: error.response?.data,
-        status: error.response?.status,
-      });
-    }
   });
 
   const logout = () => {
     localStorage.removeItem('token');
-    delete api.defaults.headers.common['Authorization'];
     queryClient.setQueryData(['user'], null);
   };
 
