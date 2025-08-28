@@ -1,170 +1,99 @@
 import React, { useState } from 'react';
 import { API_CONFIG } from './config/api';
 
-const App: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+function App() {
+  const [email, setEmail] = useState('admin');
+  const [password, setPassword] = useState('password');
+  const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
+    setMessage('');
 
-    const loginUrl = `${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`;
-    console.log('Intentando login en:', loginUrl);
+    const loginUrl = `${API_CONFIG.backendUrl}/auth/login`;
+    console.log('Attempting to log in to:', loginUrl);
 
     try {
       const response = await fetch(loginUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json',
         },
-        body: JSON.stringify({ 
-          email, 
-          password,
-          timestamp: new Date().toISOString()
-        }),
+        body: JSON.stringify({ email, password }),
       });
 
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Error desconocido' }));
-        console.error('Error response:', errorData);
-        throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-      }
-
       const data = await response.json();
-      console.log('Response data:', data);
 
-      if (data.access_token) {
-        localStorage.setItem('token', data.access_token);
-        window.location.href = '/dashboard';
+      if (response.ok) {
+        setMessage('Login exitoso: ' + data.access_token);
+        console.log('Login successful:', data);
       } else {
-        setError('Credenciales inválidas');
+        setMessage('Error de login: ' + (data.message || 'Credenciales inválidas'));
+        console.error('Login error:', data);
       }
-    } catch (err) {
-      console.error('Error completo:', err);
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+    } catch (error) {
+      setMessage('Error de red o servidor: ' + (error as Error).message);
+      console.error('Network or server error:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div style={{ 
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#f3f4f6'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        padding: '2rem',
-        borderRadius: '0.5rem',
-        boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)',
-        width: '100%',
-        maxWidth: '400px',
-      }}>
-        <h1 style={{
-          textAlign: 'center',
-          fontSize: '1.875rem',
-          fontWeight: 'bold',
-          marginBottom: '2rem'
-        }}>
-          TK Soporte
-        </h1>
-
-        <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: 'medium'
-            }}>
-              Usuario
-            </label>
-            <input
-              type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem'
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{
-              display: 'block',
-              marginBottom: '0.5rem',
-              fontSize: '0.875rem',
-              fontWeight: 'medium'
-            }}>
-              Contraseña
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={isLoading}
-              style={{
-                width: '100%',
-                padding: '0.5rem',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem'
-              }}
-            />
-          </div>
-
-          {error && (
-            <p style={{
-              color: '#dc2626',
-              fontSize: '0.875rem',
-              marginBottom: '1rem'
-            }}>
-              {error}
-            </p>
-          )}
-
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+      <div style={{ backgroundColor: '#fff', padding: '40px', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
+        <h2 style={{ textAlign: 'center', color: '#333', marginBottom: '20px' }}>TK Soporte Login</h2>
+        <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>Backend URL: {API_CONFIG.backendUrl}</p>
+        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+          <input
+            type="text"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            disabled={isLoading}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={{ padding: '10px', borderRadius: '4px', border: '1px solid #ddd' }}
+            disabled={isLoading}
+          />
           <button
             type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              backgroundColor: '#1d4ed8',
-              color: 'white',
-              padding: '0.75rem',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              fontWeight: 'medium',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
+            style={{ 
+              padding: '10px 15px', 
+              borderRadius: '4px', 
+              border: 'none', 
+              backgroundColor: '#007bff', 
+              color: '#fff', 
+              cursor: isLoading ? 'wait' : 'pointer',
               opacity: isLoading ? 0.7 : 1
             }}
+            disabled={isLoading}
           >
-            {isLoading ? 'Iniciando sesión...' : 'Iniciar sesión'}
+            {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
           </button>
-
-          {/* Debug info */}
-          <div style={{ marginTop: '1rem', fontSize: '0.75rem', color: '#666' }}>
-            API URL: {API_CONFIG.BASE_URL}
-          </div>
         </form>
+        {message && (
+          <p style={{ 
+            marginTop: '20px', 
+            textAlign: 'center', 
+            color: message.startsWith('Error') ? '#dc3545' : '#28a745',
+            padding: '10px',
+            borderRadius: '4px',
+            backgroundColor: message.startsWith('Error') ? '#f8d7da' : '#d4edda'
+          }}>
+            {message}
+          </p>
+        )}
       </div>
     </div>
   );
-};
+}
 
 export default App;

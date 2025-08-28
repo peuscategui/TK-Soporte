@@ -10,16 +10,27 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
-    console.log('Intentando validar usuario:', email);
+  async validateUser(usuario: string, clave: string): Promise<any> {
+    console.log('Intentando validar usuario:', usuario);
     try {
-      const user = await this.usersService.findOneByEmail(email);
+      const user = await this.usersService.findOneByEmail(usuario);
       console.log('Usuario encontrado:', JSON.stringify(user, null, 2));
-      if (user && user.password === pass) {
+      
+      if (!user) {
+        console.log('Usuario no encontrado');
+        return null;
+      }
+
+      // Comparación directa de contraseñas sin bcrypt por ahora
+      const isPasswordValid = user.password === clave;
+      console.log('¿Contraseña válida?:', isPasswordValid, 'Contraseña proporcionada:', clave, 'Contraseña en BD:', user.password);
+      
+      if (isPasswordValid) {
         console.log('Contraseña correcta');
         const { password, ...result } = user;
         return result;
       }
+
       console.log('Validación fallida - contraseña incorrecta');
       return null;
     } catch (error) {

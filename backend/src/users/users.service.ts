@@ -10,11 +10,13 @@ export class UsersService {
     private userRepository: Repository<User>,
   ) {}
 
-  async findOneByEmail(email: string): Promise<User | undefined> {
+  async findOneByEmail(usuario: string): Promise<User | undefined> {
+    console.log('Buscando usuario:', usuario);
     const user = await this.userRepository.findOne({
-      where: { email: email }, // buscamos en la columna 'usuario'
+      where: { email: usuario }, // email está mapeado a la columna 'usuario'
       select: ['id', 'email', 'password', 'role'],
     });
+    console.log('Usuario encontrado:', JSON.stringify(user, null, 2));
     return user || undefined;
   }
 }

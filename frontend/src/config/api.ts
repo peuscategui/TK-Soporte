@@ -1,11 +1,15 @@
-// Configuración de la API
-export const API_CONFIG = {
-  BASE_URL: 'http://192.168.40.79:5000',
-  ENDPOINTS: {
-    LOGIN: '/login',
-    TICKETS: '/tickets'
-  }
-} as const;
+const normalizeUrl = (url: string) => {
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+};
 
-// Log de configuración
-console.log('API Configuration:', API_CONFIG);
+const backendBaseUrl = normalizeUrl(process.env.REACT_APP_API_URL || 'http://192.168.40.79:5000');
+
+export const API_CONFIG = {
+  backendUrl: backendBaseUrl,
+  endpoints: {
+    login: '/auth/login',
+    tickets: '/tickets',
+  }
+};
+
+console.log('API_CONFIG loaded:', API_CONFIG);

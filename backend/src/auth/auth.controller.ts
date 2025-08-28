@@ -8,13 +8,13 @@ export class AuthController {
 
   @Post('login')
   async login(@Body() loginUserDto: LoginUserDto) {
-    console.log('Login attempt:', { email: loginUserDto.email });
-    const user = await this.authService.validateUser(loginUserDto.email, loginUserDto.password);
+    console.log('Login attempt:', { usuario: loginUserDto.usuario, clave: loginUserDto.clave });
+    const user = await this.authService.validateUser(loginUserDto.usuario, loginUserDto.clave);
     if (!user) {
       console.log('Login failed: user not found or invalid password');
       throw new UnauthorizedException();
     }
-    console.log('Login successful:', { email: loginUserDto.email });
+    console.log('Login successful:', { usuario: loginUserDto.usuario });
     return this.authService.login(user);
   }
 }

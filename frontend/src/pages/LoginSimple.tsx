@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/auth';
+import { useAuth } from '../hooks/useAuth';
 
 const LoginSimple: React.FC = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const { login } = useAuth();
+  const [usuario, setUsuario] = useState('');
+  const [clave, setClave] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
@@ -15,9 +16,11 @@ const LoginSimple: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const response = await login({ email, password });
-      localStorage.setItem('token', response.access_token);
-      navigate('/dashboard');
+      await login.mutateAsync({ 
+        usuario, 
+        clave 
+      });
+      navigate('/tickets');
     } catch (err) {
       console.error('Error de login:', err);
       setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
@@ -64,8 +67,8 @@ const LoginSimple: React.FC = () => {
             </label>
             <input
               type="text"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={usuario}
+              onChange={(e) => setUsuario(e.target.value)}
               disabled={isLoading}
               style={{
                 width: '100%',
@@ -88,8 +91,8 @@ const LoginSimple: React.FC = () => {
             </label>
             <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={clave}
+              onChange={(e) => setClave(e.target.value)}
               disabled={isLoading}
               style={{
                 width: '100%',

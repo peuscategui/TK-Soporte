@@ -2,8 +2,8 @@ import { IsString } from 'class-validator';
 
 export class LoginUserDto {
   @IsString()
-  email: string;
+  usuario: string; // Cambiado de email a usuario para coincidir con la BD
 
   @IsString()
-  password: string;
+  clave: string; // Cambiado de password a clave para coincidir con la BD
 }
