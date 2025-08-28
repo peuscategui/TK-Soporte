@@ -6,7 +6,7 @@ export const useFilteredTickets = (filters: { page: number; limit: number }) => 
   return useQuery<Ticket[]>({
     queryKey: ['tickets', filters],
     queryFn: async () => {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.TICKETS}`, {
+      const response = await fetch(`${API_CONFIG.backendUrl}${API_CONFIG.endpoints.tickets}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },

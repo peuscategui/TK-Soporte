@@ -41,8 +41,8 @@ export const useAuth = () => {
   });
 
   const login = useMutation({
-    mutationFn: async (credentials: { email: string; password: string }) => {
-      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.LOGIN}`, {
+    mutationFn: async (credentials: { usuario: string; clave: string }) => {
+      const response = await fetch(`${API_CONFIG.backendUrl}${API_CONFIG.endpoints.login}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
