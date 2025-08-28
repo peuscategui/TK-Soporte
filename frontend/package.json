@@ -27,7 +27,7 @@
   },
   "scripts": {
     "start": "cross-env PORT=3001 REACT_APP_API_URL=http://192.168.40.79:5000 react-scripts start",
-    "build": "REACT_APP_API_URL=http://192.168.40.79:5000 CI=false GENERATE_SOURCEMAP=false react-scripts build",
+    "build": "cross-env REACT_APP_API_URL=http://192.168.40.79:5000 CI=false GENERATE_SOURCEMAP=false react-scripts build",
     "test": "react-scripts test"
   },
   "browserslist": {
