@@ -42,6 +42,7 @@ export const useAuth = () => {
 
   const login = useMutation({
     mutationFn: async (credentials: { usuario: string; clave: string }) => {
+      console.log('Intentando login con:', credentials);
       const response = await fetch(`${API_CONFIG.backendUrl}${API_CONFIG.endpoints.login}`, {
         method: 'POST',
         headers: {
@@ -50,11 +51,15 @@ export const useAuth = () => {
         body: JSON.stringify(credentials),
       });
 
+      const data = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Error en la autenticación');
+        console.error('Error de autenticación:', data);
+        throw new Error(data.message || 'Error en la autenticación');
       }
 
-      return response.json();
+      console.log('Respuesta del login:', data);
+      return data;
     },
     onSuccess: (data) => {
       localStorage.setItem('token', data.access_token);

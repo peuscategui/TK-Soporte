@@ -16,14 +16,16 @@ const LoginSimple: React.FC = () => {
     setIsLoading(true);
 
     try {
+      console.log('Intentando iniciar sesión con:', { usuario });
       await login.mutateAsync({ 
         usuario, 
         clave 
       });
+      console.log('Login exitoso, redirigiendo...');
       navigate('/tickets');
     } catch (err) {
       console.error('Error de login:', err);
-      setError(err instanceof Error ? err.message : 'Error al iniciar sesión');
+      setError(err instanceof Error ? err.message : 'Error al iniciar sesión. Por favor verifica tus credenciales.');
     } finally {
       setIsLoading(false);
     }
