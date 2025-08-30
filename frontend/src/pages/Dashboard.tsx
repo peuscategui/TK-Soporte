@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import api from '../config/axios';
 import { Ticket } from '../types/ticket';
+import { config } from '../config';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -38,23 +38,44 @@ const Dashboard: React.FC = () => {
   const { data: tickets = [], isLoading, error } = useQuery<Ticket[]>({
     queryKey: ['tickets'],
     queryFn: async () => {
-      const response = await api.get('/tickets');
-      return response.data;
+      const response = await fetch(`${config.apiUrl}/tickets`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al cargar tickets');
+      }
+      
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
     },
   });
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p>Cargando...</p>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Cargando dashboard...</p>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-red-500">Error al cargar los datos: {error.message}</p>
+      <div className="flex items-center justify-center min-h-[600px]">
+        <div className="text-center">
+          <div className="bg-red-100 rounded-full p-4 mx-auto mb-4">
+            <svg className="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+          </div>
+          <p className="text-red-600 text-lg">Error al cargar los datos: {error.message}</p>
+        </div>
       </div>
     );
   }
@@ -81,10 +102,16 @@ const Dashboard: React.FC = () => {
         {
           label: 'Tickets Creados',
           data: ticketsByDay.map(day => day.total),
-          borderColor: '#90A4AE',
-          backgroundColor: '#ECEFF1',
+          borderColor: '#3B82F6',
+          backgroundColor: 'rgba(59, 130, 246, 0.1)',
           tension: 0.4,
-          fill: true
+          fill: true,
+          borderWidth: 3,
+          pointBackgroundColor: '#3B82F6',
+          pointBorderColor: '#ffffff',
+          pointBorderWidth: 2,
+          pointRadius: 6,
+          pointHoverRadius: 8
         }
       ]
     };
@@ -109,8 +136,22 @@ const Dashboard: React.FC = () => {
         {
           label: 'Tickets Atendidos',
           data: sortedAgents.map(([, count]) => count),
-          backgroundColor: '#78909C',
-          borderRadius: 6,
+          backgroundColor: [
+            'rgba(59, 130, 246, 0.8)',
+            'rgba(16, 185, 129, 0.8)',
+            'rgba(245, 158, 11, 0.8)',
+            'rgba(239, 68, 68, 0.8)',
+            'rgba(139, 92, 246, 0.8)'
+          ],
+          borderRadius: 8,
+          borderWidth: 0,
+          hoverBackgroundColor: [
+            'rgba(59, 130, 246, 1)',
+            'rgba(16, 185, 129, 1)',
+            'rgba(245, 158, 11, 1)',
+            'rgba(239, 68, 68, 1)',
+            'rgba(139, 92, 246, 1)'
+          ]
         }
       ]
     };
@@ -144,33 +185,32 @@ const Dashboard: React.FC = () => {
 
   const lineChartOptions: ChartOptions<'line'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
         labels: {
           font: {
             family: "'Inter', sans-serif",
-            size: 12
-          }
+            size: 14,
+            weight: '600'
+          },
+          usePointStyle: true,
+          padding: 20
         }
       },
       title: {
-        display: true,
-        text: 'Tendencia de Tickets',
-        font: {
-          family: "'Inter', sans-serif",
-          size: 16,
-          weight: 'bold'
-        },
-        padding: 20
+        display: false
       },
       tooltip: {
-        backgroundColor: '#ffffff',
-        titleColor: '#111827',
-        bodyColor: '#374151',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        padding: 12
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#3B82F6',
+        borderWidth: 2,
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false
       }
     },
     scales: {
@@ -180,10 +220,12 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          }
+          },
+          color: '#6B7280'
         },
         grid: {
-          color: '#e5e7eb'
+          color: 'rgba(229, 231, 235, 0.5)',
+          drawBorder: false
         }
       },
       x: {
@@ -191,44 +233,48 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          }
+          },
+          color: '#6B7280'
         },
         grid: {
-          color: '#e5e7eb'
+          display: false
         }
       }
+    },
+    interaction: {
+      intersect: false,
+      mode: 'index'
     }
   };
 
   const verticalBarOptions: ChartOptions<'bar'> = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: 'top',
         labels: {
           font: {
             family: "'Inter', sans-serif",
-            size: 12
-          }
+            size: 14,
+            weight: '600'
+          },
+          usePointStyle: true,
+          padding: 20
         }
       },
       title: {
-        display: true,
-        text: 'Rendimiento por Agente',
-        font: {
-          family: "'Inter', sans-serif",
-          size: 16,
-          weight: 'bold'
-        },
-        padding: 20
+        display: false
       },
       tooltip: {
-        backgroundColor: '#ffffff',
-        titleColor: '#111827',
-        bodyColor: '#374151',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
-        padding: 12
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#3B82F6',
+        borderWidth: 2,
+        padding: 12,
+        cornerRadius: 8,
+        displayColors: false
       }
     },
     scales: {
@@ -238,10 +284,12 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          }
+          },
+          color: '#6B7280'
         },
         grid: {
-          color: '#e5e7eb'
+          color: 'rgba(229, 231, 235, 0.5)',
+          drawBorder: false
         }
       },
       x: {
@@ -249,7 +297,8 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 12
-          }
+          },
+          color: '#6B7280'
         },
         grid: {
           display: false
@@ -261,43 +310,182 @@ const Dashboard: React.FC = () => {
   const horizontalBarOptions: ChartOptions<'bar'> = {
     indexAxis: 'y',
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         display: false
       },
       tooltip: {
-        backgroundColor: '#ffffff',
-        titleColor: '#111827',
-        bodyColor: '#374151',
-        borderColor: '#e5e7eb',
-        borderWidth: 1,
+        backgroundColor: 'rgba(17, 24, 39, 0.95)',
+        titleColor: '#ffffff',
+        bodyColor: '#ffffff',
+        borderColor: '#3B82F6',
+        borderWidth: 2,
         padding: 12,
-        usePointStyle: true
+        cornerRadius: 8,
+        displayColors: false
       }
     },
     scales: {
       y: {
         grid: {
           display: false
+        },
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          },
+          color: '#6B7280'
         }
       },
       x: {
         beginAtZero: true,
         grid: {
-          color: '#e5e7eb'
+          color: 'rgba(229, 231, 235, 0.5)',
+          drawBorder: false
+        },
+        ticks: {
+          font: {
+            family: "'Inter', sans-serif",
+            size: 12
+          },
+          color: '#6B7280'
         }
       }
     }
   };
 
+  // Calcular estadísticas generales
+  const totalTickets = tickets.length;
+  const pendingTickets = tickets.filter(t => !t.agente).length;
+  const completedTickets = tickets.filter(t => t.agente).length;
+  const avgResponseTime = tickets.length > 0 ? Math.round(tickets.reduce((acc, t) => acc + (t.agente ? 1 : 0), 0) / tickets.length * 100) : 0;
+
   return (
-    <div className="space-y-6">
-      {/* Fila de estadísticas por área y categoría */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-6">
+      {/* Header con estadísticas principales */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard de TK Soporte</h1>
+        <p className="text-gray-600">Resumen general del sistema de tickets</p>
+      </div>
+
+      {/* Tarjetas de estadísticas principales */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-blue-100 text-sm font-medium">Total Tickets</p>
+              <p className="text-3xl font-bold">{totalTickets}</p>
+            </div>
+            <div className="bg-blue-400 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-green-500 to-green-600 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-green-100 text-sm font-medium">Completados</p>
+              <p className="text-3xl font-bold">{completedTickets}</p>
+            </div>
+            <div className="bg-green-400 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-yellow-100 text-sm font-medium">Pendientes</p>
+              <p className="text-3xl font-bold">{pendingTickets}</p>
+            </div>
+            <div className="bg-yellow-400 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-purple-100 text-sm font-medium">Tasa de Respuesta</p>
+              <p className="text-3xl font-bold">{avgResponseTime}%</p>
+            </div>
+            <div className="bg-purple-400 rounded-full p-3">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fila de gráficos principales */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Gráfico de Tendencia */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+            <div className="flex justify-between items-center">
+              <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+                <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                Tendencia de Tickets
+              </h3>
+              <div className="flex gap-2">
+                {(['day', 'week', 'month'] as TimeRange[]).map((range) => (
+                  <button
+                    key={range}
+                    onClick={() => setTimeRange(range)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      timeRange === range
+                        ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:scale-105'
+                    }`}
+                  >
+                    {range === 'day' ? 'Diario' : range === 'week' ? 'Semanal' : 'Mensual'}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="h-[300px]">
+              <Line options={lineChartOptions} data={prepareChartData()} />
+            </div>
+          </div>
+        </div>
+
+        {/* Gráfico de Rendimiento por Agente */}
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+              <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+              Rendimiento por Agente
+            </h3>
+          </div>
+          <div className="p-6">
+            <div className="h-[300px]">
+              <Bar options={verticalBarOptions} data={prepareAgentPerformanceData()} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fila de gráficos de área y categoría */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Gráfico de Atenciones por Área */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-xl font-medium text-gray-900">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+              <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
               Atenciones por Área
             </h3>
           </div>
@@ -319,8 +507,10 @@ const Dashboard: React.FC = () => {
                     }, {} as Record<string, number>) || {})
                       .sort(([, a], [, b]) => b - a)
                       .map(([, count]) => count),
-                    backgroundColor: '#78909C',
-                    borderRadius: 6,
+                    backgroundColor: 'rgba(139, 92, 246, 0.8)',
+                    borderRadius: 8,
+                    borderWidth: 0,
+                    hoverBackgroundColor: 'rgba(139, 92, 246, 1)'
                   }]
                 }}
               />
@@ -329,9 +519,10 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Gráfico de Atenciones por Categoría */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-xl font-medium text-gray-900">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+            <h3 className="text-xl font-semibold text-gray-900 flex items-center">
+              <div className="w-3 h-3 bg-orange-500 rounded-full mr-3"></div>
               Atenciones por Categoría
             </h3>
           </div>
@@ -353,8 +544,10 @@ const Dashboard: React.FC = () => {
                     }, {} as Record<string, number>) || {})
                       .sort(([, a], [, b]) => b - a)
                       .map(([, count]) => count),
-                    backgroundColor: '#78909C',
-                    borderRadius: 6,
+                    backgroundColor: 'rgba(245, 158, 11, 0.8)',
+                    borderRadius: 8,
+                    borderWidth: 0,
+                    hoverBackgroundColor: 'rgba(245, 158, 11, 1)'
                   }]
                 }}
               />
@@ -363,108 +556,46 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Fila de gráficos principales */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* Gráfico de Tendencia */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex justify-between items-center">
-              <h3 className="text-xl font-medium text-gray-900">
-                Tendencia de Tickets
-              </h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={() => setTimeRange('day')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    timeRange === 'day'
-                      ? 'bg-[#607D8B] text-white'
-                      : 'bg-[#ECEFF1] text-gray-600 hover:bg-[#CFD8DC]'
-                  }`}
-                >
-                  Diario
-                </button>
-                <button
-                  onClick={() => setTimeRange('week')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    timeRange === 'week'
-                      ? 'bg-[#607D8B] text-white'
-                      : 'bg-[#ECEFF1] text-gray-600 hover:bg-[#CFD8DC]'
-                  }`}
-                >
-                  Semanal
-                </button>
-                <button
-                  onClick={() => setTimeRange('month')}
-                  className={`px-4 py-2 rounded-md text-sm font-medium ${
-                    timeRange === 'month'
-                      ? 'bg-[#607D8B] text-white'
-                      : 'bg-[#ECEFF1] text-gray-600 hover:bg-[#CFD8DC]'
-                  }`}
-                >
-                  Mensual
-                </button>
-              </div>
-            </div>
-          </div>
-          <div className="p-6">
-            <div className="h-[300px]">
-              <Line options={lineChartOptions} data={prepareChartData()} />
-            </div>
-          </div>
-        </div>
-
-        {/* Gráfico de Rendimiento por Agente */}
-        <div className="bg-white rounded-lg shadow">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-xl font-medium text-gray-900">
-              Rendimiento por Agente
-            </h3>
-          </div>
-          <div className="p-6">
-            <div className="h-[300px]">
-              <Bar options={verticalBarOptions} data={prepareAgentPerformanceData()} />
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Tabla de tickets recientes */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h4 className="text-xl font-medium text-gray-900">Tickets Recientes</h4>
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-gray-100">
+          <h4 className="text-xl font-semibold text-gray-900 flex items-center">
+            <div className="w-3 h-3 bg-indigo-500 rounded-full mr-3"></div>
+            Tickets Recientes
+          </h4>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead>
-              <tr className="bg-[#e8f5e9]">
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">
+              <tr className="bg-gray-50">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Fecha
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Solicitante
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Solicitud
                 </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">
+                <th scope="col" className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                   Categoría
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {tickets?.slice(0, 5).map((ticket, index) => (
-                <tr key={`${ticket.createdAt}-${ticket.solicitante}-${index}`} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr key={`${ticket.createdAt}-${ticket.solicitante}-${index}`} className="hover:bg-gray-50 transition-colors duration-200">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                     {new Date(ticket.createdAt).toLocaleDateString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     {ticket.solicitante}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 max-w-xs truncate">
                     {ticket.description}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-[#e8f5e9] text-[#4CAF50]">
+                    <span className="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-200">
                       {ticket.category}
                     </span>
                   </td>
