@@ -193,7 +193,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 14,
-            weight: '600'
+            weight: 600
           },
           usePointStyle: true,
           padding: 20
@@ -224,8 +224,7 @@ const Dashboard: React.FC = () => {
           color: '#6B7280'
         },
         grid: {
-          color: 'rgba(229, 231, 235, 0.5)',
-          drawBorder: false
+          color: 'rgba(229, 231, 235, 0.5)'
         }
       },
       x: {
@@ -257,7 +256,7 @@ const Dashboard: React.FC = () => {
           font: {
             family: "'Inter', sans-serif",
             size: 14,
-            weight: '600'
+            weight: 600
           },
           usePointStyle: true,
           padding: 20
@@ -288,8 +287,7 @@ const Dashboard: React.FC = () => {
           color: '#6B7280'
         },
         grid: {
-          color: 'rgba(229, 231, 235, 0.5)',
-          drawBorder: false
+          color: 'rgba(229, 231, 235, 0.5)'
         }
       },
       x: {
@@ -339,20 +337,19 @@ const Dashboard: React.FC = () => {
           color: '#6B7280'
         }
       },
-      x: {
-        beginAtZero: true,
-        grid: {
-          color: 'rgba(229, 231, 235, 0.5)',
-          drawBorder: false
-        },
-        ticks: {
-          font: {
-            family: "'Inter', sans-serif",
-            size: 12
+              x: {
+          beginAtZero: true,
+          grid: {
+            color: 'rgba(229, 231, 235, 0.5)'
           },
-          color: '#6B7280'
+          ticks: {
+            font: {
+              family: "'Inter', sans-serif",
+              size: 12
+            },
+            color: '#6B7280'
+          }
         }
-      }
     }
   };
 
