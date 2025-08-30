@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import axios from 'axios';
+import api from '../config/axios';
 import { Ticket } from '../types/ticket';
 import {
   Chart as ChartJS,
@@ -35,10 +35,10 @@ type TimeRange = 'day' | 'week' | 'month';
 const Dashboard: React.FC = () => {
   const [timeRange, setTimeRange] = useState<TimeRange>('week');
   
-  const { data: tickets, isLoading } = useQuery<Ticket[]>({
+  const { data: tickets = [], isLoading, error } = useQuery<Ticket[]>({
     queryKey: ['tickets'],
     queryFn: async () => {
-      const response = await axios.get('/tickets');
+      const response = await api.get('/tickets');
       return response.data;
     },
   });
@@ -47,6 +47,14 @@ const Dashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <p>Cargando...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-red-500">Error al cargar los datos: {error.message}</p>
       </div>
     );
   }
