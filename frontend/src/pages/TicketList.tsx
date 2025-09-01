@@ -3,11 +3,19 @@ import { useQuery } from '@tanstack/react-query';
 import { Ticket } from '../types/ticket';
 import { config } from '../config';
 
+interface PaginatedResponse {
+  tickets: Ticket[];
+  total: number;
+  totalPages: number;
+}
+
 const TicketList: React.FC = () => {
-  const { data: tickets = [], isLoading, error } = useQuery<Ticket[]>({
-    queryKey: ['tickets'],
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const { data, isLoading, error } = useQuery<PaginatedResponse>({
+    queryKey: ['tickets', currentPage, pageSize],
     queryFn: async () => {
-      const response = await fetch(`${config.apiUrl}/tickets`, {
+      const response = await fetch(`${config.apiUrl}/tickets?page=${currentPage}&limit=${pageSize}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
@@ -19,7 +27,11 @@ const TicketList: React.FC = () => {
       }
       
       const data = await response.json();
-      return Array.isArray(data) ? data : [];
+      return {
+        tickets: Array.isArray(data.tickets) ? data.tickets : [],
+        total: data.total || 0,
+        totalPages: data.totalPages || 1
+      };
     },
   });
 
@@ -63,7 +75,7 @@ const TicketList: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-6">
+      <div className="px-2">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-medium">Tickets</h2>
           <button className="bg-[#4CAF50] text-white px-4 py-2 rounded-md text-sm hover:bg-[#43A047] flex items-center">
@@ -100,10 +112,17 @@ const TicketList: React.FC = () => {
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Registros por página:</span>
-              <select className="border rounded-md text-sm px-2 py-1">
-                <option>10</option>
-                <option>25</option>
-                <option>50</option>
+              <select 
+                className="border rounded-md text-sm px-2 py-1"
+                value={pageSize}
+                onChange={(e) => {
+                  setPageSize(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+              >
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
               </select>
             </div>
             <div className="flex items-center space-x-2">
@@ -124,39 +143,39 @@ const TicketList: React.FC = () => {
         </div>
       </div>
 
-      <div className="px-6">
+      <div className="px-2">
         <div className="bg-white rounded-lg shadow">
           <div className="overflow-x-auto">
-            <table className="min-w-full">
+            <table className="w-full table-fixed">
               <thead>
                 <tr className="bg-[#e8f5e9] border-b border-gray-200">
-                  <th className="w-4 px-6 py-3">
+                  <th className="w-8 px-3 py-3">
                     <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Fecha de Registro</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Solicitante</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Solicitud</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Categoría</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Agente</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Área</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase">Acciones</th>
+                  <th className="w-28 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Fecha de Registro</th>
+                  <th className="w-32 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Solicitante</th>
+                  <th className="w-96 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Solicitud</th>
+                  <th className="w-32 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Categoría</th>
+                  <th className="w-32 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Agente</th>
+                  <th className="w-32 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Área</th>
+                  <th className="w-24 px-3 py-3 text-left text-xs font-medium text-gray-600 uppercase">Acciones</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {(tickets || []).map((ticket: Ticket, index: number) => (
+                {(data?.tickets || []).map((ticket: Ticket, index: number) => (
                   <tr key={`${ticket.createdAt}-${ticket.solicitante}`} className="hover:bg-gray-50">
-                    <td className="w-4 px-6 py-4">
+                    <td className="w-8 px-3 py-4">
                       <input type="checkbox" className="rounded border-gray-300 text-green-600 focus:ring-green-500" />
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-4 text-sm break-words">
                       {new Date(ticket.createdAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{ticket.solicitante}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{ticket.description}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{ticket.category}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{ticket.agente}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{ticket.area}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <td className="px-3 py-4 text-sm break-words">{ticket.solicitante}</td>
+                    <td className="px-3 py-4 text-sm break-words">{ticket.description}</td>
+                    <td className="px-3 py-4 text-sm break-words">{ticket.category}</td>
+                    <td className="px-3 py-4 text-sm break-words">{ticket.agente}</td>
+                    <td className="px-3 py-4 text-sm break-words">{ticket.area}</td>
+                    <td className="px-3 py-4 text-sm">
                       <div className="flex items-center space-x-2">
                         <button className="text-blue-600 hover:text-blue-800">
                           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -184,12 +203,39 @@ const TicketList: React.FC = () => {
           <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200">
             <div className="flex items-center">
               <span className="text-sm text-gray-700">
-                Página 1 de 3
+                Página {currentPage} de {data?.totalPages || 1} ({data?.total || 0} registros)
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <button className="px-3 py-1 bg-[#e8f5e9] text-gray-600 rounded-md text-sm hover:bg-[#c8e6c9]">Anterior</button>
-              <button className="px-3 py-1 bg-[#e8f5e9] text-gray-600 rounded-md text-sm hover:bg-[#c8e6c9]">Siguiente</button>
+              <button 
+                className="px-3 py-1 bg-[#e8f5e9] text-gray-600 rounded-md text-sm hover:bg-[#c8e6c9] disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Anterior
+              </button>
+              <div className="flex items-center space-x-1">
+                {Array.from({ length: data?.totalPages || 1 }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={`px-3 py-1 rounded-md text-sm ${
+                      currentPage === page
+                        ? 'bg-[#4CAF50] text-white'
+                        : 'bg-[#e8f5e9] text-gray-600 hover:bg-[#c8e6c9]'
+                    }`}
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+              <button 
+                className="px-3 py-1 bg-[#e8f5e9] text-gray-600 rounded-md text-sm hover:bg-[#c8e6c9] disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setCurrentPage(prev => Math.min(data?.totalPages || 1, prev + 1))}
+                disabled={currentPage === (data?.totalPages || 1)}
+              >
+                Siguiente
+              </button>
             </div>
           </div>
         </div>
